@@ -8,27 +8,33 @@ import streamlit as st
 
 
 # ---------------------------------------------------------------------------
-# Page configuration
-# ---------------------------------------------------------------------------
-
-st.set_page_config(
-    page_title="Getaround | Rental Delay Decision",
-    page_icon="🚗",
-    layout="wide",
-)
-
-
-# ---------------------------------------------------------------------------
 # Project paths
 # ---------------------------------------------------------------------------
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
+
+LOGO_PATH = (
+    PROJECT_ROOT
+    / "dashboard"
+    / "getaround_logo.png"
+)
 
 DELAY_DATA_PATH = (
     PROJECT_ROOT
     / "data"
     / "raw"
     / "get_around_delay_analysis.xlsx"
+)
+
+
+# ---------------------------------------------------------------------------
+# Page configuration
+# ---------------------------------------------------------------------------
+
+st.set_page_config(
+    page_title="Getaround | Rental Delay Decision",
+    page_icon=str(LOGO_PATH),
+    layout="wide",
 )
 
 
@@ -123,7 +129,9 @@ median_interference = problematic_cases[
 # Dashboard header
 # ---------------------------------------------------------------------------
 
-st.title("🚗 Rental Delay Decision Dashboard")
+st.image(str(LOGO_PATH), width=220)
+
+st.title("Rental Delay Decision Dashboard")
 
 st.markdown(
     """
@@ -183,6 +191,7 @@ st.caption(
     "previous checkout delay is observed and the planned gap is within "
     "the dataset's documented 12-hour window."
 )
+
 
 # ---------------------------------------------------------------------------
 # Interactive policy simulator
@@ -319,6 +328,7 @@ st.caption(
     "It could be rescheduled or fulfilled with another vehicle."
 )
 
+
 # ---------------------------------------------------------------------------
 # Compare policy options
 # ---------------------------------------------------------------------------
@@ -365,17 +375,18 @@ for threshold_option in threshold_options:
     )
 
     comparison_rows.append(
-    {
-        "Minimum gap": threshold_option,
-        "Bookings requiring different timing (%)": restricted_option_pct,
-        "Interference potentially prevented (%)": prevented_option_pct,
-        "Problematic cases potentially addressed": (
-            f"{prevented_option_count} / {problematic_count}"
-        ),
-    }
-)
+        {
+            "Minimum gap": threshold_option,
+            "Bookings requiring different timing (%)": restricted_option_pct,
+            "Interference potentially prevented (%)": prevented_option_pct,
+            "Problematic cases potentially addressed": (
+                f"{prevented_option_count} / {problematic_count}"
+            ),
+        }
+    )
 
 comparison_df = pd.DataFrame(comparison_rows)
+
 
 # ---------------------------------------------------------------------------
 # Policy trade-off chart
@@ -401,6 +412,7 @@ st.caption(
     "additional protection comes at the cost of restricting more historical "
     "consecutive-booking configurations."
 )
+
 
 # ---------------------------------------------------------------------------
 # Policy comparison table
@@ -433,6 +445,7 @@ st.dataframe(
     hide_index=True,
     use_container_width=True,
 )
+
 
 # ---------------------------------------------------------------------------
 # Recommended scenario metrics
@@ -475,6 +488,7 @@ recommended_prevented_pct = (
     / recommended_problematic_count
     * 100
 )
+
 
 # ---------------------------------------------------------------------------
 # Product recommendation
@@ -533,6 +547,7 @@ st.markdown(
     """
 )
 
+
 # ---------------------------------------------------------------------------
 # Next-driver impact
 # ---------------------------------------------------------------------------
@@ -553,45 +568,49 @@ st.markdown(
 impact_col1, impact_col2 = st.columns([1, 2])
 
 with impact_col1:
-    
-    st.metric(
-    "Median observed interference",
-    f"{median_interference:.1f} min",
-)
 
-st.metric(
-    "Problematic cases analyzed",
-    f"{len(problematic_cases):,}",
-)
+    st.metric(
+        "Median observed interference",
+        f"{median_interference:.1f} min",
+    )
+
+    st.metric(
+        "Problematic cases analyzed",
+        f"{len(problematic_cases):,}",
+    )
 
 with impact_col2:
     severity_data = pd.DataFrame(
-    {
-        "Severity": [
-            "≤15 min",
-            "16–30 min",
-            "31–60 min",
-            "61–120 min",
-            ">120 min",
-        ],
-        "Share of problematic cases (%)": [
-            (problematic_cases["interference_minutes"] <= 15).mean() * 100,
-            (
-                (problematic_cases["interference_minutes"] > 15)
-                & (problematic_cases["interference_minutes"] <= 30)
-            ).mean() * 100,
-            (
-                (problematic_cases["interference_minutes"] > 30)
-                & (problematic_cases["interference_minutes"] <= 60)
-            ).mean() * 100,
-            (
-                (problematic_cases["interference_minutes"] > 60)
-                & (problematic_cases["interference_minutes"] <= 120)
-            ).mean() * 100,
-            (problematic_cases["interference_minutes"] > 120).mean() * 100,
-        ],
-    }
-)
+        {
+            "Severity": [
+                "≤15 min",
+                "16–30 min",
+                "31–60 min",
+                "61–120 min",
+                ">120 min",
+            ],
+            "Share of problematic cases (%)": [
+                (
+                    problematic_cases["interference_minutes"] <= 15
+                ).mean() * 100,
+                (
+                    (problematic_cases["interference_minutes"] > 15)
+                    & (problematic_cases["interference_minutes"] <= 30)
+                ).mean() * 100,
+                (
+                    (problematic_cases["interference_minutes"] > 30)
+                    & (problematic_cases["interference_minutes"] <= 60)
+                ).mean() * 100,
+                (
+                    (problematic_cases["interference_minutes"] > 60)
+                    & (problematic_cases["interference_minutes"] <= 120)
+                ).mean() * 100,
+                (
+                    problematic_cases["interference_minutes"] > 120
+                ).mean() * 100,
+            ],
+        }
+    )
 
     st.bar_chart(
         severity_data,
@@ -628,6 +647,7 @@ st.caption(
     "The 60-minute Connect-only scenario is a product-testing recommendation, "
     "not a claim that it is the mathematically optimal policy."
 )
+
 
 # ---------------------------------------------------------------------------
 # Data context and limitations
@@ -674,7 +694,7 @@ with st.expander("View methodology and data limitations"):
         """
     )
 
-    st.caption(
+st.caption(
     "Getaround Rental Delay Decision Dashboard · "
     "Historical decision-support analysis"
 )

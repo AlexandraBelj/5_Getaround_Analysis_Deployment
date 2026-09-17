@@ -22,6 +22,20 @@ from sklearn.preprocessing import OneHotEncoder, StandardScaler
 PROJECT_ROOT = Path(__file__).resolve().parent
 MLFLOW_DB = PROJECT_ROOT / "mlflow.db"
 
+DATA_PATH = (
+    PROJECT_ROOT
+    / "data"
+    / "raw"
+    / "get_around_pricing_project.csv"
+)
+
+MODEL_PATH = (
+    PROJECT_ROOT
+    / "outputs"
+    / "models"
+    / "getaround_pricing_model.joblib"
+)
+
 
 # ---------------------------------------------------------------------------
 # MLflow configuration
@@ -30,16 +44,10 @@ MLFLOW_DB = PROJECT_ROOT / "mlflow.db"
 mlflow.set_tracking_uri(f"sqlite:///{MLFLOW_DB.as_posix()}")
 mlflow.set_experiment("getaround-pricing-model")
 
+
 # ---------------------------------------------------------------------------
 # Load and prepare pricing data
 # ---------------------------------------------------------------------------
-
-DATA_PATH = (
-    PROJECT_ROOT
-    / "data"
-    / "raw"
-    / "get_around_pricing_project.csv"
-)
 
 df = pd.read_csv(DATA_PATH)
 
@@ -60,6 +68,7 @@ X_train, X_test, y_train, y_test = train_test_split(
 
 print(f"Training observations: {len(X_train):,}")
 print(f"Test observations: {len(X_test):,}")
+
 
 # ---------------------------------------------------------------------------
 # Feature groups
@@ -106,6 +115,7 @@ preprocessor = ColumnTransformer(
 
 print("Preprocessing pipeline ready.")
 
+
 # ---------------------------------------------------------------------------
 # Experiment 1 — Linear Regression
 # ---------------------------------------------------------------------------
@@ -128,6 +138,7 @@ with mlflow.start_run(run_name="linear-regression"):
     r2 = r2_score(y_test, y_pred)
 
     mlflow.log_param("model", "LinearRegression")
+
     mlflow.log_metric("mae", mae)
     mlflow.log_metric("rmse", rmse)
     mlflow.log_metric("r2", r2)
@@ -137,7 +148,8 @@ with mlflow.start_run(run_name="linear-regression"):
     print(f"RMSE: {rmse:.2f}")
     print(f"R²:   {r2:.3f}")
 
-    # ---------------------------------------------------------------------------
+
+# ---------------------------------------------------------------------------
 # Experiment 2 — Ridge Regression
 # ---------------------------------------------------------------------------
 
@@ -165,6 +177,7 @@ with mlflow.start_run(run_name="ridge-regression"):
 
     mlflow.log_param("model", "RidgeCV")
     mlflow.log_param("selected_alpha", selected_alpha)
+
     mlflow.log_metric("mae", mae)
     mlflow.log_metric("rmse", rmse)
     mlflow.log_metric("r2", r2)
@@ -175,7 +188,8 @@ with mlflow.start_run(run_name="ridge-regression"):
     print(f"RMSE: {rmse:.2f}")
     print(f"R²:   {r2:.3f}")
 
-    # ---------------------------------------------------------------------------
+
+# ---------------------------------------------------------------------------
 # Experiment 3 — Random Forest Baseline
 # ---------------------------------------------------------------------------
 
@@ -216,7 +230,8 @@ with mlflow.start_run(run_name="random-forest-baseline"):
     print(f"RMSE: {rmse:.2f}")
     print(f"R²:   {r2:.3f}")
 
-    # ---------------------------------------------------------------------------
+
+# ---------------------------------------------------------------------------
 # Experiment 4 — Tuned Random Forest
 # ---------------------------------------------------------------------------
 
@@ -256,9 +271,7 @@ with mlflow.start_run(run_name="random-forest-tuned"):
     mlflow.log_metric("rmse", rmse)
     mlflow.log_metric("r2", r2)
 
-    mlflow.log_artifact(
-    str(PROJECT_ROOT / "outputs" / "models" / "getaround_pricing_model.joblib")
-)
+    mlflow.log_artifact(str(MODEL_PATH))
 
     print("\nTuned Random Forest")
     print(f"MAE:  {mae:.2f}")

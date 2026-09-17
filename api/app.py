@@ -45,7 +45,7 @@ app = FastAPI(
 
 
 # ---------------------------------------------------------------------------
-# Prediction input schema
+# Prediction schemas
 # ---------------------------------------------------------------------------
 
 class CarFeatures(BaseModel):
@@ -64,11 +64,19 @@ class CarFeatures(BaseModel):
     winter_tires: bool
 
 
+class PricePrediction(BaseModel):
+    predicted_rental_price_per_day: float
+
+
 # ---------------------------------------------------------------------------
 # Root endpoint
 # ---------------------------------------------------------------------------
 
-@app.get("/")
+@app.get(
+    "/",
+    summary="API status",
+    description="Check that the Getaround pricing API is running.",
+)
 def root():
     return {
         "message": "Getaround Pricing Prediction API",
@@ -80,7 +88,15 @@ def root():
 # Prediction endpoint
 # ---------------------------------------------------------------------------
 
-@app.post("/predict")
+@app.post(
+    "/predict",
+    response_model=PricePrediction,
+    summary="Predict daily rental price",
+    description=(
+        "Predict the daily rental price of one vehicle from its "
+        "characteristics and equipment."
+    ),
+)
 def predict(features: CarFeatures):
     input_data = pd.DataFrame([features.model_dump()])
 
