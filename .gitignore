@@ -63,3 +63,6 @@ Thumbs.db
 mlflow.db
 mlartifacts/
 mlruns/
+
+# Local pricing notebook figure exports
+outputs/figures/Figures Pricing Prediction/
